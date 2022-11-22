@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+client_secret_828311702305-3o4usi5raebpt6j1lim7rip91in43b0m.apps.googleusercontent.com.json
 node_modules
 dist
 dist-ssr
