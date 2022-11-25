@@ -16,7 +16,7 @@ export function Home () {
             </textarea>
             </h1>
     </div>
-    <Auth />
+    <IAuth />
 </body>
     )    
 }
