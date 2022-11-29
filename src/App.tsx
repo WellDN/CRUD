@@ -1,4 +1,4 @@
-import { Home } from "./home"
+import { Home } from './home'
 import { Routes, Route } from 'react-router-dom'
 
 function App() {
