@@ -1,22 +1,15 @@
 import { Auth } from "./auth"
+import { Login } from './login';
 
 export function Home () {
 
   return (
   <body>
   <div>
-  <h1 className="font-bold">
-      Login
-   <textarea className="h-6 resize rounded-md">
-      </textarea>
-      </h1>
-  <h1 className="">
-      password 
-      <textarea className="h-6 resize rounded-md">
-          </textarea>
-          </h1>
+  <Login/>
   </div>
   <Auth />
 </body>
+
   )    
 }

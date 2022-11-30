@@ -1,6 +1,4 @@
-import { TokenResponse } from '@react-oauth/google';
-import { useGoogleLogin } from '@react-oauth/google';
-
+import { TokenResponse, useGoogleLogin, CredentialResponse } from '@react-oauth/google';
 import axios from 'axios';
 import { useState } from 'react';
 
@@ -21,6 +19,9 @@ export function Auth() {
     },
     onError: errorResponse => console.log(errorResponse),
   });
+
+
+
   return(
     <button onClick={() => googleLogin()}>
         Login with Google 🚀
