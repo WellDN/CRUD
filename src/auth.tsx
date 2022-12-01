@@ -20,8 +20,6 @@ export function Auth() {
     onError: errorResponse => console.log(errorResponse),
   });
 
-
-
   return(
     <button onClick={() => googleLogin()}>
         Login with Google 🚀
