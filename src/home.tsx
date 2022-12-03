@@ -6,7 +6,7 @@ export function Home () {
   return (
   <body>
   <div>
-  <Login/>
+  <Login />
   </div>
   <Auth />
 </body>
