@@ -9,10 +9,6 @@ type User = {
 export function Login (){
 
 
-
-
-
-
   const [password, setPassword] = useState({
     firstPassword: '',
     confirmPassword: ''
@@ -70,8 +66,8 @@ const inputChange: (event: React.ChangeEvent<HTMLInputElement>) => void = (event
       <p className="text-red-500 text-xs italic">Please confirm your password.</p>
     </div>
     <div className="flex items-center justify-between">
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
-        Register
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+        Sign Up
       </button>
     </div>
   </form>
