@@ -1,12 +1,15 @@
-import { Home } from './home'
-import { Routes, Route } from 'react-router-dom'
+import { Auth } from "./auth"
+import { Login } from "./login"
+
 
 function App() {
     return (
-        <Routes>
-            <Route path="/" element={<Home />} />
-            
-        </Routes>
+        <body>
+        <div>
+        <Login />
+        </div>
+        <Auth />
+      </body>
     )
 }
 

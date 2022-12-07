@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { PrismaClient } from '@prisma/client'
+import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Signup } from './Sign-up';
 
 type User = {
   name: string;
@@ -6,12 +10,50 @@ type User = {
   password: string;
 }
 
-export function Login (){
+const AuthContext = React.createContext({});
 
+export const useAuth = (): any => {
+  return useContext(AuthContext)
+}
+
+export function Login (){
+  
+  //const prisma = new PrismaClient();
+  
+
+
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const { login, currentUser } = useAuth()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (currentUser) navigate('/')
+  }, [])
+
+  async function handleSubmit(e: { preventDefault: () => void }) {
+    e.preventDefault()
+
+    try {
+      setError('')
+      setLoading(true)
+      await login(emailRef.current?.value, passwordRef.current?.value)
+      navigate('/')
+    } catch {
+      setError('Failed to log in')
+    }
+
+    setLoading(false)
+  }
+  
+  
 
   const [password, setPassword] = useState({
     firstPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    loginPassword:''
   })
   
   const [validLength, setValidLength] = useState(false);
@@ -107,7 +149,7 @@ const inputChange: (event: React.ChangeEvent<HTMLInputElement>) => void = (event
       <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
         Password
       </label>
-      <input className="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="******************"></input>
+      <input className="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" name="loginPassword" placeholder="******************"></input>
       <p className="text-red-500 text-xs italic">Please choose a password.</p>
     </div>
     <div className="flex items-center justify-between">
