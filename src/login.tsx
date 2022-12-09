@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { PrismaClient } from '@prisma/client'
 import { Link, useNavigate } from 'react-router-dom';
-import React from 'react';
-import { ISignup, useAuth } from './Sign-up';
+import { ISignup } from './Sign-up';
+
 
 type User = {
   name: string;
@@ -12,68 +12,9 @@ type User = {
 
 export function Login (){
   
-  
-  
-
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
-  const { login, currentUser } = useAuth()
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (currentUser) navigate('/')
-  }, [])
-
-  async function handleSubmit(e: { preventDefault: () => void }) {
-    e.preventDefault()
-
-    try {
-      setError('')
-      setLoading(true)
-      await login(emailRef.current?.value, passwordRef.current?.value)
-      navigate('/')
-    } catch {
-      setError('Failed to log in')
-    }
-
-    setLoading(false)
-  }
   
-  
-
-  const [password, setPassword] = useState({
-    firstPassword: '',
-    confirmPassword: '',
-    loginPassword:''
-  })
-  
-  const [validLength, setValidLength] = useState(false);
-  const [hasNumber, setHasNumber] = useState(false);
-  const [upperCase, setUpperCase] = useState(false);
-  const [lowerCase, setLowerCase] = useState(false);
-  const [specialChar, setSpecialChar] = useState(false);
-  const [match, setMatch] = useState(false);
-  const [requiredLength, setRequiredLength] = useState(8);
-
-const inputChange: (event: React.ChangeEvent<HTMLInputElement>) => void = (event) => {
-    const { value, name } = event.target;
-    setPassword({
-      ...password,
-      [name]: value
-    })
-  }
-  useEffect(() => {
-    setValidLength(password.firstPassword.length >= requiredLength ? true : false);
-    setUpperCase(password.firstPassword.toLowerCase() !== password.firstPassword);
-    setLowerCase(password.firstPassword.toUpperCase() !== password.firstPassword);
-    setHasNumber(/\d/.test(password.firstPassword));
-    setMatch(!!password.firstPassword && password.firstPassword === password.confirmPassword)
-    setSpecialChar(/[ `!@#$%^&*()_+\-=\]{};':"\\|,.<>?~]/.test(password.firstPassword));
-
-  }, [password, requiredLength]);
-
   return (
     <>
     <body>
