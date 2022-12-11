@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { PrismaClient } from '@prisma/client'
 import { Link } from 'react-router-dom';
 import React from "react";
-
-//const prisma = new PrismaClient();
 
 export function Login () {
 
