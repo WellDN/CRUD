@@ -2,36 +2,55 @@ import { PrismaClient } from "@prisma/client"
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
-import * as uuidv4  from 'uuid'
 import express from 'express'
-import axios from "axios";
+import * as axios from "axios";
+import uuid4 from "uuid4";
+
+type Token = {
+  id: number | string;
+  user: string;
+  email: string;
+  password: string;
+  jti: string;
+  refreshToken: Promise<void>;
+  userId: string | undefined;
+}
+
+type AxiosClient = {
+  options: string
+  getCurrentAccessToken: string
+  getCurrentRefreshToken: Promise<void>
+  refreshTokenUrl: Promise<void>
+  logout: Promise<void>
+  setRefreshedTokens: boolean
+}
 
 
-export function Singup() {
 
-const db = new PrismaClient();
+export function Singup(user: Token, jti: string) {
 
-function generateAccessToken(user) {
-    return jwt.sign({ userId: user.id }, process.env.JWT_ACCESS_SECRET, {
+const prisma = new PrismaClient();
+
+function generateAccessToken() {
+    return jwt.sign({ userId: user.id}, process.env.JWT_ACCESS_SECRET as string, {
       expiresIn: '5m',
     });
   }
   
-  // I choosed 8h because i prefer to make the user login again each day.
-  // But keep him logged in if he is using the app.
-  // You can change this value depending on your app logic.
-  // I would go for a maximum of 7 days, and make him login again after 7 days of inactivity.
-  function generateRefreshToken(user, jti) {
+
+  function generateRefreshToken() {
     return jwt.sign({
       userId: user.id,
       jti
-    }, process.env.JWT_REFRESH_SECRET, {
+    }, process.env.JWT_REFRESH_SECRET as string, {
       expiresIn: '8h',
     });
   }
   
-  function generateTokens(user, jti) {
+  function generateTokens(user: string, jti: string) {
+    //@ts-ignore
     const accessToken = generateAccessToken(user);
+    //@ts-ignore
     const refreshToken = generateRefreshToken(user, jti);
   
     return {
@@ -41,55 +60,58 @@ function generateAccessToken(user) {
   }
 
 
-  function hashToken(token) {
+  function hashToken(token: crypto.BinaryLike) {
     return crypto.createHash('sha512').update(token).digest('hex');
   }
 
-  function findUserByEmail(email) {
-    return db.user.findUnique({
+  function findUserByEmail(email: string) {
+    return prisma.user.findUnique({
       where: {
         email,
       },
     });
   }
   
-  function createUserByEmailAndPassword(user) {
+  function createUserByEmailAndPassword(user: Token) {
     user.password = bcrypt.hashSync(user.password, 12);
-    return db.user.create({
-      data: user,
+    return prisma.user.create({
+      //@ts-ignore
+      data: user
     });
   }
-  
-  function findUserById(id) {
-    return db.user.findUnique({
+
+
+  function findUserById(id: string) {
+    return prisma.user.findUnique({
       where: {
         id,
       },
     });
   }
 
-  function addRefreshTokenToWhitelist({ jti, refreshToken, userId }) {
-    return db.refreshToken.create({
+  function addRefreshTokenToWhitelist({ jti, refreshToken, userId}: Token) {
+    return prisma.refreshToken.create({
+      //@ts-ignore
       data: {
-        id: jti,
+        id: jti,//@ts-ignore
         hashedToken: hashToken(refreshToken),
         userId
       },
     });
   }
   
-  // used to check if the token sent by the client is in the database.
-  function findRefreshTokenById(id) {
-    return db.refreshToken.findUnique({
+
+  function findRefreshTokenById(id: string) {
+    return prisma.refreshToken.findUnique({
       where: {
         id,
       },
     });
   }
   
-  // soft delete tokens after usage.
-  function deleteRefreshToken(id) {
-    return db.refreshToken.update({
+
+  function deleteRefreshToken(id: string) {
+    return prisma.refreshToken.update({
       where: {
         id,
       },
@@ -99,8 +121,8 @@ function generateAccessToken(user) {
     });
   }
   
-  function revokeTokens(userId) {
-    return db.refreshToken.updateMany({
+  function revokeTokens(userId: string) {
+    return prisma.refreshToken.updateMany({
       where: {
         userId
       },
@@ -126,9 +148,9 @@ router.post('/register', async (req, res, next) => {
         res.status(400);
         throw new Error('Email already in use.');
       }
-  
-      const user = await createUserByEmailAndPassword({ email, password });
-      const jti = uuidv4();
+  //@ts-ignore
+      const user: string | any = await createUserByEmailAndPassword({ email, password });
+      const jti = uuid4();
       const { accessToken, refreshToken } = generateTokens(user, jti);
       await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
   
@@ -164,7 +186,7 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Invalid login credentials.');
       }
   
-      const jti = uuidv4();
+      const jti = uuid4();
       const { accessToken, refreshToken } = generateTokens(existingUser, jti);
       await addRefreshTokenToWhitelist({ jti, refreshToken, userId: existingUser.id });
   
@@ -185,7 +207,7 @@ router.post('/refreshToken', async (req, res, next) => {
       res.status(400);
       throw new Error('Missing refresh token.');
     }
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
     const savedRefreshToken = await findRefreshTokenById(payload.jti);
 
     if (!savedRefreshToken || savedRefreshToken.revoked === true) {
@@ -206,7 +228,7 @@ router.post('/refreshToken', async (req, res, next) => {
     }
 
     await deleteRefreshToken(savedRefreshToken.id);
-    const jti = uuidv4();
+    const jti = uuid4();
     const { accessToken, refreshToken: newRefreshToken } = generateTokens(user, jti);
     await addRefreshTokenToWhitelist({ jti, refreshToken: newRefreshToken, userId: user.id });
 
@@ -219,8 +241,7 @@ router.post('/refreshToken', async (req, res, next) => {
   }
 });
 
-// This endpoint is only for demo purpose.
-// Move this logic where you need to revoke the tokens( for ex, on password reset)
+
 router.post('/revokeRefreshTokens', async (req, res, next) => {
   try {
     const { userId } = req.body;
@@ -233,7 +254,7 @@ router.post('/revokeRefreshTokens', async (req, res, next) => {
 
 //protected routes
 
-function isAuthenticated(req, res, next) {
+function isAuthenticated(req: { headers: { authorization: any; }; payload: string | jwt.JwtPayload; }, res: { status: (arg0: number) => void; }, next: () => any) {
     const { authorization } = req.headers;
   
     if (!authorization) {
@@ -243,9 +264,9 @@ function isAuthenticated(req, res, next) {
   
     try {
       const token = authorization.split(' ')[1];
-      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string);
       req.payload = payload;
-    } catch (err) {
+    } catch (err: Error | any) {
       res.status(401);
       if (err.name === 'TokenExpiredError') {
         throw new Error(err.name);
@@ -255,12 +276,6 @@ function isAuthenticated(req, res, next) {
   
     return next();
   }
-
-  const express = require('express');
-const { isAuthenticated } = require('../../middlewares');
-const { findUserById } = require('./users.services');
-
-const router = express.Router();
 
 router.get('/profile', isAuthenticated, async (req, res, next) => {
   try {
@@ -273,16 +288,16 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
   }
 });
 
-router.use('/users', users);
+router.use('/users');
 
 /**/
 
 
 
-let failedQueue = [];
+let failedQueue:[] = [];
 let isRefreshing = false;
 
-const processQueue = (error) => {
+const processQueue = (error: Error) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -301,11 +316,11 @@ const processQueue = (error) => {
   refreshTokenUrl,
   logout,
   setRefreshedTokens,
-}: any) {
+}: AxiosClient) {
   const client = axios.create(options);
 
   client.interceptors.request.use(
-    (config) => {
+    (config: { authorization: boolean; headers: { Authorization: string; }; }) => {
       if (config.authorization !== false) {
         const token = getCurrentAccessToken();
         if (token) {
@@ -314,33 +329,32 @@ const processQueue = (error) => {
       }
       return config;
     },
-    (error) => {
+    (error: Error) => {
       return Promise.reject(error);
     }
   );
 
   client.interceptors.response.use(
-    (response) => {
-      // Any status code that lie within the range of 2xx cause this function to trigger
-      // Do something with response data
+    (response: Promise<void>) => {
+
       return response;
     },
-    (error) => {
+    (error: Error) => {
       const originalRequest = error.config;
-      // In "axios": "^1.1.3" there is an issue with headers, and this is the workaround.
+
       originalRequest.headers = JSON.parse(
         JSON.stringify(originalRequest.headers || {})
       );
       const refreshToken = getCurrentRefreshToken();
 
-      // If error, process all the requests in the queue and logout the user.
-      const handleError = (error) => {
+      
+      const handleError = (error: Error) => {
         processQueue(error);
         logout();
         return Promise.reject(error);
       };
 
-      // Refresh token conditions
+      
       if (
         refreshToken &&
         error.response?.status === 401 &&
@@ -351,6 +365,7 @@ const processQueue = (error) => {
 
         if (isRefreshing) {
           return new Promise(function (resolve, reject) {
+            //@ts-ignore
             failedQueue.push({ resolve, reject });
           })
             .then(() => {
@@ -366,7 +381,7 @@ const processQueue = (error) => {
           .post(refreshTokenUrl, {
             refreshToken: refreshToken,
           })
-          .then((res) => {
+          .then((res: { data: { accessToken: string; refreshToken: Promise<void>; }; }) => {
             const tokens = {
               accessToken: res.data?.accessToken,
               refreshToken: res.data?.refreshToken,
@@ -381,7 +396,7 @@ const processQueue = (error) => {
           });
       }
 
-      // Refresh token missing or expired => logout user...
+      
       if (
         error.response?.status === 401 &&
         error.response?.data?.message === "TokenExpiredError"
@@ -389,16 +404,16 @@ const processQueue = (error) => {
         return handleError(error);
       }
 
-      // Any status codes that falls outside the range of 2xx cause this function to trigger
-      // Do something with response error
+     
+     
       return Promise.reject(error);
     }
   );
-
+  
   return client;
+  }
 
 
 
-
-    return()
+ return({generateTokens})
 }
