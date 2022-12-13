@@ -1,18 +1,19 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient, User, RefreshToken } from "@prisma/client"
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import express from 'express'
 import * as axios from "axios";
 import uuid4 from "uuid4";
+import { useEffect, useRef, useState } from "react";
 
 type Token = {
-  id: number | string;
-  user: string;
+  id: string;
+  user: User;
   email: string;
   password: string;
   jti: string;
-  refreshToken: Promise<void>;
+  refreshToken: RefreshToken[];
   userId: string | undefined;
 }
 
@@ -20,7 +21,7 @@ type AxiosClient = {
   options: string
   getCurrentAccessToken: string
   getCurrentRefreshToken: Promise<void>
-  refreshTokenUrl: Promise<void>
+  refreshTokenUrl: RefreshToken;
   logout: Promise<void>
   setRefreshedTokens: boolean
 }
@@ -31,14 +32,14 @@ export function Singup(user: Token, jti: string) {
 
 const prisma = new PrismaClient();
 
-function generateAccessToken() {
+function generateAccessToken(user: Token) {
     return jwt.sign({ userId: user.id}, process.env.JWT_ACCESS_SECRET as string, {
       expiresIn: '5m',
     });
   }
   
 
-  function generateRefreshToken() {
+  function generateRefreshToken(user: Token, jti: Token) {
     return jwt.sign({
       userId: user.id,
       jti
@@ -46,11 +47,11 @@ function generateAccessToken() {
       expiresIn: '8h',
     });
   }
-  
-  function generateTokens(user: string, jti: string) {
-    //@ts-ignore
+
+  function generateTokens(user: Token, jti: Token) {
+    
     const accessToken = generateAccessToken(user);
-    //@ts-ignore
+    
     const refreshToken = generateRefreshToken(user, jti);
   
     return {
@@ -75,8 +76,7 @@ function generateAccessToken() {
   function createUserByEmailAndPassword(user: Token) {
     user.password = bcrypt.hashSync(user.password, 12);
     return prisma.user.create({
-      //@ts-ignore
-      data: user
+      data: user 
     });
   }
 
@@ -91,9 +91,8 @@ function generateAccessToken() {
 
   function addRefreshTokenToWhitelist({ jti, refreshToken, userId}: Token) {
     return prisma.refreshToken.create({
-      //@ts-ignore
       data: {
-        id: jti,//@ts-ignore
+        id: jti,
         hashedToken: hashToken(refreshToken),
         userId
       },
@@ -148,7 +147,7 @@ router.post('/register', async (req, res, next) => {
         res.status(400);
         throw new Error('Email already in use.');
       }
-  //@ts-ignore
+  
       const user: string | any = await createUserByEmailAndPassword({ email, password });
       const jti = uuid4();
       const { accessToken, refreshToken } = generateTokens(user, jti);
@@ -163,7 +162,7 @@ router.post('/register', async (req, res, next) => {
     }
   });
 
-  router.use('/auth', auth);
+  router.use('/auth');
 
   router.post('/login', async (req, res, next) => {
     try {
@@ -291,129 +290,5 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
 router.use('/users');
 
 /**/
-
-
-
-let failedQueue:[] = [];
-let isRefreshing = false;
-
-const processQueue = (error: Error) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve();
-    }
-  });
-
-  failedQueue = [];
-};
-
- function createAxiosClient({
-  options,
-  getCurrentAccessToken,
-  getCurrentRefreshToken,
-  refreshTokenUrl,
-  logout,
-  setRefreshedTokens,
-}: AxiosClient) {
-  const client = axios.create(options);
-
-  client.interceptors.request.use(
-    (config: { authorization: boolean; headers: { Authorization: string; }; }) => {
-      if (config.authorization !== false) {
-        const token = getCurrentAccessToken();
-        if (token) {
-          config.headers.Authorization = "Bearer " + token;
-        }
-      }
-      return config;
-    },
-    (error: Error) => {
-      return Promise.reject(error);
-    }
-  );
-
-  client.interceptors.response.use(
-    (response: Promise<void>) => {
-
-      return response;
-    },
-    (error: Error) => {
-      const originalRequest = error.config;
-
-      originalRequest.headers = JSON.parse(
-        JSON.stringify(originalRequest.headers || {})
-      );
-      const refreshToken = getCurrentRefreshToken();
-
-      
-      const handleError = (error: Error) => {
-        processQueue(error);
-        logout();
-        return Promise.reject(error);
-      };
-
-      
-      if (
-        refreshToken &&
-        error.response?.status === 401 &&
-        error.response.data.message === "TokenExpiredError" &&
-        originalRequest?.url !== refreshTokenUrl &&
-        originalRequest?._retry !== true
-      ) {
-
-        if (isRefreshing) {
-          return new Promise(function (resolve, reject) {
-            //@ts-ignore
-            failedQueue.push({ resolve, reject });
-          })
-            .then(() => {
-              return client(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
-        }
-        isRefreshing = true;
-        originalRequest._retry = true;
-        return client
-          .post(refreshTokenUrl, {
-            refreshToken: refreshToken,
-          })
-          .then((res: { data: { accessToken: string; refreshToken: Promise<void>; }; }) => {
-            const tokens = {
-              accessToken: res.data?.accessToken,
-              refreshToken: res.data?.refreshToken,
-            };
-            setRefreshedTokens(tokens);
-            processQueue(null);
-
-            return client(originalRequest);
-          }, handleError)
-          .finally(() => {
-            isRefreshing = false;
-          });
-      }
-
-      
-      if (
-        error.response?.status === 401 &&
-        error.response?.data?.message === "TokenExpiredError"
-      ) {
-        return handleError(error);
-      }
-
-     
-     
-      return Promise.reject(error);
-    }
-  );
-  
-  return client;
-  }
-
-
-
- return({generateTokens})
+ return
 }

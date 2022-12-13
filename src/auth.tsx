@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useState } from 'react';
 
 export function Auth() {
-  const [tokenResponse, setTokenResponse] = useState<TokenResponse | null>();
+  const [tokenResponse, setTokenResponse] = useState<TokenResponse>();
   const [user, setUser] = useState<any>(null);
 
   const googleLogin = useGoogleLogin({

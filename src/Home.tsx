@@ -2,12 +2,14 @@ import { Auth } from "./auth";
 import { Login } from "./login";
 
 export function Home() {
-    return(
+  return(
+    <>
         <body>
         <div>
         <Login />
         </div>
         <Auth />
       </body>
+      </>
     )
 }

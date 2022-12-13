@@ -1,47 +1,69 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useActionData, useNavigate } from 'react-router-dom';
 import React from "react";
+import { useAuthStore } from './authStore';
+import { getProfile } from './services/services';
+
+async function action({ request }) {
+  try {
+    let formData = await request.formData();
+    const type = formData.get("type");
+    const email = formData.get("email");
+    const password = formData.get("password");
+    const response = type === "register" ? await register({email, password}) : await login({email, password});
+    const { accessToken, refreshToken } = response.data;
+    return { tokens: { accessToken, refreshToken }, error: null };
+  } catch (error) {
+    return {
+      error: error?.response?.data?.message || error.message,
+      tokens: null,
+    };
+  }
+}
 
 export function Login () {
 
+  const actionData = useActionData();
+  const navigate = useNavigate();
+  const login = useAuthStore((state) => state.login);
+  const logout = useAuthStore((state) => state.logout);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn());
+  const [profile, setProfile] = useState(null);
 
-  const [password, setPassword] = useState({
-    firstPassword: '',
-    confirmPassword: '',
-  })
-  
-  const [validLength, setValidLength] = useState(false);
-  const [hasNumber, setHasNumber] = useState(false);
-  const [upperCase, setUpperCase] = useState(false);
-  const [lowerCase, setLowerCase] = useState(false);
-  const [specialChar, setSpecialChar] = useState(false);
-  const [match, setMatch] = useState(false);
-  const [requiredLength, setRequiredLength] = useState(8);
-  
-  const inputChange: (event: React.ChangeEvent<HTMLInputElement>) => void = (event) => {
-    const { value, name } = event.target;
-    setPassword({
-      ...password,
-      [name]: value
-    })
-  }
   useEffect(() => {
-    setValidLength(password.firstPassword.length >= requiredLength ? true : false);
-    setUpperCase(password.firstPassword.toLowerCase() !== password.firstPassword);
-    setLowerCase(password.firstPassword.toUpperCase() !== password.firstPassword);
-    setHasNumber(/\d/.test(password.firstPassword));
-    setMatch(!!password.firstPassword && password.firstPassword === password.confirmPassword)
-    setSpecialChar(/[ `!@#$%^&*()_+\-=\]{};':"\\|,.<>?~]/.test(password.firstPassword));
-  
-  }, [password, requiredLength]);
-  
-  const emailRef = useRef<HTMLInputElement>(null)
-  const passwordRef = useRef<HTMLInputElement>(null)
-  
+    if (isLoggedIn) {
+      getProfile().then(({data}) => {
+        setProfile(data);
+      }).catch(error => {
+        console.error(error);
+      })
+    }
+  }, [isLoggedIn])
+
+  useEffect(() => {
+    if (actionData?.tokens) {
+      login(actionData.tokens);
+      navigate("/");
+    }
+  }, [actionData]);
+
+  if (isLoggedIn) {
+    navigate("/");
+  }
+
   return (
     <>
     <body>
-    <div>    
+    <div>
+    <h1>Welcome to home page</h1>
+      {isLoggedIn ? (
+        <>
+          Your user data:
+          <pre>{JSON.stringify(profile, null, 2)}</pre>
+        </>
+      ) : (
+        <>You are not logged in</>
+      )}
     <div className="w-full max-w-xs">
     <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" >
     <div className="mb-4">
@@ -52,22 +74,20 @@ export function Login () {
     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
     id="email-adress"
     name="email"
-    type="email"
+    type="text"
     autoComplete="email"
-    required
     placeholder="Email"
+    required
     />
   </div>
   <div className="mb-4">
     <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="firstPassword">
    Password
     </label>
-    <input
-    onChange={inputChange}
-    
+    <input    
     required
     id="password" 
-    name="firstPassword" 
+    name="password" 
     type="password" 
     placeholder="******************"
     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -78,8 +98,6 @@ export function Login () {
       Confirm Password
     </label>
     <input 
-    onChange={inputChange}
-    
     required       
     placeholder="******************"
     id="confirmPassword"
@@ -93,6 +111,9 @@ export function Login () {
   <button
     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
     type="submit"
+    id="register"
+    name="type"
+    value="register"
     >
       Sign Up
     </button>
@@ -111,25 +132,7 @@ export function Login () {
 </form>
     <p className="text-center text-gray-500 text-xs">
     </p>
-  </div>
-  <ul>
-    <li>
-      Valid Length: {validLength ? <span>True</span> : <span>False</span>}
-    </li>
-    <li>
-      Has a Number: {hasNumber ? <span>True</span> : <span>False</span>}
-    </li>
-    <li>
-      UpperCase: {upperCase ? <span>True</span> : <span>False</span>}
-    </li>
-    <li>
-      LowerCase: {lowerCase ? <span>True</span> : <span>False</span>}
-    </li>
-    <li>Match: {match ? <span>True</span> : <span>False</span>}</li>
-    <li>
-      Special Character: {specialChar ? <span>True</span> : <span>False</span>}
-    </li>
-  </ul>    
+  </div>   
   </div>
         <div className="w-full max-w-xs">
   <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -139,7 +142,6 @@ export function Login () {
     </label>
     <input
     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-     ref={emailRef}
      required
      id="email"
      name="email"
@@ -153,7 +155,6 @@ export function Login () {
         Password
       </label>
       <input className="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-      ref={passwordRef}
       id="password"
       type="password"
       name="loginPassword"
@@ -166,6 +167,7 @@ export function Login () {
     <div className="flex items-center justify-between">
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
         Login
+        {actionData?.error && <div className="alert">{actionData?.error}</div>}
       </button>
       <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
       <Link className=""
@@ -179,6 +181,24 @@ export function Login () {
   <p className="text-center text-gray-500 text-xs">
   </p>
 </div>
+<div>
+        <ul>
+        <li>
+          {!isLoggedIn ? (
+            <Link to="/login" className="">
+              <strong>Login</strong>
+            </Link>
+          ) : (
+            <button
+              className=""
+              onClick={() => logout()}
+            >
+              <strong>Logout</strong>
+            </button>
+          )}
+        </li>
+      </ul>
+        </div>
 </body>
 </>
     )
