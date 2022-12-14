@@ -1,6 +1,7 @@
 import create from "zustand";
+import { Token } from "./db";
 
-function setTokensToLocalStorage({ accessToken, refreshToken }) {
+function setTokensToLocalStorage({ accessToken, refreshToken }: Token) {
   localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
 }

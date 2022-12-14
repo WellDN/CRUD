@@ -1,18 +1,19 @@
 import { client } from "./axiosClient";
+import { Token } from '../db'
 
-export function register({ email, password }) {
+export function register({ email, password }: Token) {
   return client.post(
     "auth/register",
     { email, password },
-    { authorization: false }
+    {data: { authorization: false } }
   );
 }
 
-export function login({ email, password }) {
+export function login({ email, password }: Token) {
     return client.post(
       "auth/login",
       { email, password },
-      { authorization: false }
+    {data: { authorization: false }}
     );
   }
 

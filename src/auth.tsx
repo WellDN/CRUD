@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export function Auth() {
   const [tokenResponse, setTokenResponse] = useState<TokenResponse>();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<string>(null!);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async tokenResponse => {

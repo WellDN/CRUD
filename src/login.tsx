@@ -1,16 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useActionData, useNavigate } from 'react-router-dom';
-import React from "react";
 import { useAuthStore } from './authStore';
-import { getProfile } from './services/services';
+import { getProfile, login, register } from './services/services';
 
-async function action({ request }) {
+export async function action({ request }: string) {
   try {
-    let formData = await request.formData();
-    const type = formData.get("type");
-    const email = formData.get("email");
-    const password = formData.get("password");
-    const response = type === "register" ? await register({email, password}) : await login({email, password});
+    let formData:Promise<void> = await request.formData();
+    const type: string = formData.get("type");
+    const email: string = formData.get("email");
+    const password: string = formData.get("password");
+    const response: Promise<void> = type === "register" ? await register({email, password}) : await login({email, password});
     const { accessToken, refreshToken } = response.data;
     return { tokens: { accessToken, refreshToken }, error: null };
   } catch (error) {
@@ -25,9 +24,9 @@ export function Login () {
 
   const actionData = useActionData();
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
-  const logout = useAuthStore((state) => state.logout);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn());
+  const login: string = useAuthStore((state) => state.login);
+  const logout: (() => void) = useAuthStore((state) => state.logout);
+  const isLoggedIn: boolean = useAuthStore((state) => state.isLoggedIn());
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {

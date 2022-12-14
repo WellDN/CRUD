@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import { Home } from "./Home"
-import { Login } from "./login"
+import { Login, action as loginAction } from "./login"
 
 
 export default function App() {
@@ -8,7 +8,7 @@ export default function App() {
   <Routes>
     <Route path="/" element={<Home />} />
     <Route path="/home" element={<Home />} />
-    <Route path="/home" element={<Login />} />
+    <Route path="/login" element={<Login />} action={loginAction}/>
   </Routes>
     )
 }

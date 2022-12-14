@@ -7,13 +7,11 @@ const REFRESH_TOKEN_URL = `${BASE_URL}auth/refreshToken`
 function getCurrentAccessToken() {
     return useAuthStore.getState().accessToken
 }
-
 function getCurrentRefreshToken() {
     return useAuthStore.getState().refreshToken
 }
 
-
-function setRefreshedTokens(tokens){
+function setRefreshedTokens(tokens: string[]){
     const login = useAuthStore.getState().login
     login(tokens)
 }

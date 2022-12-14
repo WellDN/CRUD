@@ -3,32 +3,28 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import express from 'express'
-import * as axios from "axios";
 import uuid4 from "uuid4";
-import { useEffect, useRef, useState } from "react";
 
-type Token = {
+
+export type Token = {
+  accessToken: string;
   id: string;
-  user: User;
+  user: User | string;
   email: string;
   password: string;
   jti: string;
-  refreshToken: RefreshToken[];
+  refreshToken: RefreshToken;
   userId: string | undefined;
 }
 
-type AxiosClient = {
-  options: string
-  getCurrentAccessToken: string
-  getCurrentRefreshToken: Promise<void>
-  refreshTokenUrl: RefreshToken;
-  logout: Promise<void>
-  setRefreshedTokens: boolean
+type Refresh = {
+  jti: string;
+  refreshToken: RefreshToken;
+  userId: string;
 }
 
 
-
-export function Singup(user: Token, jti: string) {
+export function Singup() {
 
 const prisma = new PrismaClient();
 
@@ -89,11 +85,11 @@ function generateAccessToken(user: Token) {
     });
   }
 
-  function addRefreshTokenToWhitelist({ jti, refreshToken, userId}: Token) {
+  function addRefreshTokenToWhitelist({ jti, refreshToken, userId}: Refresh) {
     return prisma.refreshToken.create({
       data: {
         id: jti,
-        hashedToken: hashToken(refreshToken),
+        hashedToken: hashToken(refreshToken as unknown as string),
         userId
       },
     });
@@ -112,7 +108,7 @@ function generateAccessToken(user: Token) {
   function deleteRefreshToken(id: string) {
     return prisma.refreshToken.update({
       where: {
-        id,
+      id,
       },
       data: {
         revoked: true
@@ -148,7 +144,28 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Email already in use.');
       }
   
-      const user: string | any = await createUserByEmailAndPassword({ email, password });
+      const user: User = await createUserByEmailAndPassword({
+        email, password,
+        id: "",
+        user: {
+          id: "",
+          email: "",
+          password: "",
+          createdAt: new Date,
+          updatedAt: new Date
+        },
+        jti: "",
+        refreshToken: {
+          id: "",
+          hashedToken: "",
+          userId: "",
+          revoked: false,
+          createdAt: new Date,
+          updatedAt: new Date
+        },
+        userId: undefined,
+        accessToken: ""
+      });
       const jti = uuid4();
       const { accessToken, refreshToken } = generateTokens(user, jti);
       await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
@@ -280,7 +297,9 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
   try {
     const { userId } = req.payload;
     const user = await findUserById(userId);
-    delete user.password;
+    if(user) {
+    delete user.password; 
+  }
     res.json(user);
   } catch (err) {
     next(err);
