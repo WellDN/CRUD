@@ -1,7 +1,11 @@
 import create from "zustand";
-import { Token } from "./db";
 
-function setTokensToLocalStorage({ accessToken, refreshToken }: Token) {
+type IIn = {
+  accessToken: string;
+  refreshToken: string
+}
+
+function setTokensToLocalStorage({ accessToken, refreshToken }: IIn) {
   localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
 }

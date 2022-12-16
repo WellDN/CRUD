@@ -1,5 +1,5 @@
 import { PrismaClient, RefreshToken, User} from "@prisma/client"
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import express from 'express'
@@ -14,7 +14,7 @@ export type Token = {
   jti: string;
   refreshToken: string | RefreshToken;
   userId: string | undefined;
-}
+} | User
 
 type Refresh = {
   jti: string;
@@ -25,8 +25,21 @@ type Refresh = {
 type EP = {
   password: string;
   email: string;
-  existingUser: Promise<boolean>
-}
+  existingUser: Promise<void>
+} | User | null
+
+type IUser = {
+  id: string
+  email: string
+  password: string
+  createdAt: Date
+  updatedAt: Date
+  user: string;
+  userId: string;
+  jti: string;
+  accessToken: string;
+  refreshToken: RefreshToken;
+} | User
 
 export function Singup() {
 const prisma = new PrismaClient();
@@ -38,7 +51,7 @@ function generateAccessToken(user: Token) {
   }
   
 
-  function generateRefreshToken(user: Token, jti: Token) {
+  function generateRefreshToken(user: Token, jti: string) {
     return jwt.sign({
       userId: user.id,
       jti
@@ -47,7 +60,7 @@ function generateAccessToken(user: Token) {
     });
   }
 
-  function generateTokens(user: Token, jti: Token) {
+  function generateTokens(user: Token, jti: string) {
     
     const accessToken = generateAccessToken(user);
     
@@ -75,7 +88,7 @@ function generateAccessToken(user: Token) {
   function createUserByEmailAndPassword(user: Token) {
     user.password = bcrypt.hashSync(user.password, 12);
     return prisma.user.create({
-      data: user 
+      data: user
     });
   }
 
@@ -147,7 +160,7 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Email already in use.');
       }
   
-      const user: User = await createUserByEmailAndPassword({
+      const user: IUser = await createUserByEmailAndPassword({
         email, password,
         accessToken: "",
         id: "",
@@ -288,7 +301,7 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
     const { userId } = req.payload;
     const user = await findUserById(userId);
     if(user) {
-    delete user.password; 
+    delete user.password;
   }
     res.json(user);
   } catch (err) {
