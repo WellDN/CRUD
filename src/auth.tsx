@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useState } from 'react';
 
 export function Auth() {
+  
   const [tokenResponse, setTokenResponse] = useState<TokenResponse>();
   const [user, setUser] = useState<string>(null!);
 
@@ -22,7 +23,7 @@ export function Auth() {
 
   return(
     <button onClick={() => googleLogin()}>
-        Login with Google 🚀
+        Login with Google
       </button>
   )
 }

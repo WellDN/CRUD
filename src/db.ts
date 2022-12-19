@@ -2,7 +2,7 @@ import { PrismaClient, RefreshToken, User} from "@prisma/client"
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import uuid4 from "uuid4";
 
 export type Token = {
@@ -227,7 +227,7 @@ router.post('/refreshToken', async (req, res, next) => {
       throw new Error('Missing refresh token.');
     }
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
-    const savedRefreshToken = await findRefreshTokenById(payload.jti);
+    const savedRefreshToken = await findRefreshTokenById(payload.jti as string);
 
     if (!savedRefreshToken || savedRefreshToken.revoked === true) {
       res.status(401);
@@ -273,7 +273,7 @@ router.post('/revokeRefreshTokens', async (req, res, next) => {
 
 //protected routes
 
-function isAuthenticated(req: { headers: { authorization: any; }; payload: string | jwt.JwtPayload; }, res: { status: (arg0: number) => void; }, next: () => any) {
+function isAuthenticated(req: Request, res: Response, next: NextFunction):void {
     const { authorization } = req.headers;
   
     if (!authorization) {

@@ -1,68 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link, useActionData, useNavigate } from 'react-router-dom';
-import { useAuthStore } from './authStore';
-import { getProfile, login, register } from './services/services';
-
-export async function action({ request }: string) {
-  try {
-    let formData:Promise<void> = await request.formData();
-    const type: string = formData.get("type");
-    const email: string = formData.get("email");
-    const password: string = formData.get("password");
-    const response: Promise<void> = type === "register" ? await register({email, password}) : await login({email, password});
-    const { accessToken, refreshToken } = response.data;
-    return { tokens: { accessToken, refreshToken }, error: null };
-  } catch (error) {
-    return {
-      error: error?.response?.data?.message || error.message,
-      tokens: null,
-    };
-  }
-}
+import { Link } from 'react-router-dom';
 
 export function Login () {
-
-  const actionData = useActionData();
-  const navigate = useNavigate();
-  const login: string = useAuthStore((state) => state.login);
-  const logout: (() => void) = useAuthStore((state) => state.logout);
-  const isLoggedIn: boolean = useAuthStore((state) => state.isLoggedIn());
-  const [profile, setProfile] = useState(null);
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      getProfile().then(({data}) => {
-        setProfile(data);
-      }).catch(error => {
-        console.error(error);
-      })
-    }
-  }, [isLoggedIn])
-
-  useEffect(() => {
-    if (actionData?.tokens) {
-      login(actionData.tokens);
-      navigate("/");
-    }
-  }, [actionData]);
-
-  if (isLoggedIn) {
-    navigate("/");
-  }
 
   return (
     <>
     <body>
     <div>
-    <h1>Welcome to home page</h1>
-      {isLoggedIn ? (
-        <>
-          Your user data:
-          <pre>{JSON.stringify(profile, null, 2)}</pre>
-        </>
-      ) : (
-        <>You are not logged in</>
-      )}
     <div className="w-full max-w-xs">
     <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" >
     <div className="mb-4">
@@ -166,7 +109,6 @@ export function Login () {
     <div className="flex items-center justify-between">
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
         Login
-        {actionData?.error && <div className="alert">{actionData?.error}</div>}
       </button>
       <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
       <Link className=""
@@ -180,25 +122,7 @@ export function Login () {
   <p className="text-center text-gray-500 text-xs">
   </p>
 </div>
-<div>
-        <ul>
-        <li>
-          {!isLoggedIn ? (
-            <Link to="/login" className="">
-              <strong>Login</strong>
-            </Link>
-          ) : (
-            <button
-              className=""
-              onClick={() => logout()}
-            >
-              <strong>Logout</strong>
-            </button>
-          )}
-        </li>
-      </ul>
-        </div>
 </body>
 </>
-    )
+)
 }
