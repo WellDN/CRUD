@@ -1,5 +1,5 @@
 import { PrismaClient, RefreshToken, User} from "@prisma/client"
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import express, { NextFunction, Request, Response } from 'express'
@@ -23,25 +23,16 @@ type Refresh = {
 }
 
 type EP = {
-  password: string;
-  email: string;
   existingUser: Promise<void>
 } | User | null
 
-type IUser = {
-  id: string
-  email: string
-  password: string
-  createdAt: Date
-  updatedAt: Date
-  user: string;
-  userId: string;
-  jti: string;
-  accessToken: string;
-  refreshToken: RefreshToken;
-} | User
+type OptionalProperty = {
+  password?: string;
+} | null
+
 
 export function Singup() {
+
 const prisma = new PrismaClient();
 
 function generateAccessToken(user: Token) {
@@ -60,6 +51,7 @@ function generateAccessToken(user: Token) {
     });
   }
 
+  
   function generateTokens(user: Token, jti: string) {
     
     const accessToken = generateAccessToken(user);
@@ -105,7 +97,7 @@ function generateAccessToken(user: Token) {
     return prisma.refreshToken.create({
       data: {
         id: jti,
-        hashedToken: hashToken(refreshToken as unknown as string),
+        hashedToken: hashToken(refreshToken as string),
         userId
       },
     });
@@ -160,7 +152,7 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Email already in use.');
       }
   
-      const user: IUser = await createUserByEmailAndPassword({
+      const user: Token = await createUserByEmailAndPassword({
         email, password,
         accessToken: "",
         id: "",
@@ -169,8 +161,11 @@ router.post('/register', async (req, res, next) => {
         refreshToken: "",
         userId: ""
       });
+      
       const jti = uuid4();
+      
       const { accessToken, refreshToken } = generateTokens(user, jti);
+      
       await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
   
       res.json({
@@ -205,7 +200,7 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Invalid login credentials.');
       }
   
-      const jti = uuid4();
+      const jti = uuid4(); //validation
       const { accessToken, refreshToken } = generateTokens(existingUser, jti);
       await addRefreshTokenToWhitelist({ jti, refreshToken, userId: existingUser.id });
   
@@ -227,7 +222,8 @@ router.post('/refreshToken', async (req, res, next) => {
       throw new Error('Missing refresh token.');
     }
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string);
-    const savedRefreshToken = await findRefreshTokenById(payload.jti as string);
+    //@ts-ignore
+    const savedRefreshToken = await findRefreshTokenById(payload.jti);
 
     if (!savedRefreshToken || savedRefreshToken.revoked === true) {
       res.status(401);
@@ -239,7 +235,7 @@ router.post('/refreshToken', async (req, res, next) => {
       res.status(401);
       throw new Error('Unauthorized');
     }
-
+    //@ts-ignore
     const user = await findUserById(payload.userId);
     if (!user) {
       res.status(401);
@@ -273,7 +269,7 @@ router.post('/revokeRefreshTokens', async (req, res, next) => {
 
 //protected routes
 
-function isAuthenticated(req: Request, res: Response, next: NextFunction):void {
+function isAuthenticated(req: Request, res: Response, next: NextFunction): void {
     const { authorization } = req.headers;
   
     if (!authorization) {
@@ -284,22 +280,23 @@ function isAuthenticated(req: Request, res: Response, next: NextFunction):void {
     try {
       const token = authorization.split(' ')[1];
       const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string);
+      //@ts-ignore
       req.payload = payload;
-    } catch (err: Error | any) {
+    } catch (err) {
       res.status(401);
-      if (err.name === 'TokenExpiredError') {
-        throw new Error(err.name);
+      if (err === 'TokenExpiredError') {
+        throw new Error(err);
       }
       throw new Error('🚫 Un-Authorized 🚫');
     }
-  
+
     return next();
   }
 
 router.get('/profile', isAuthenticated, async (req, res, next) => {
-  try {
+  try {//@ts-ignore
     const { userId } = req.payload;
-    const user = await findUserById(userId);
+    const user: OptionalProperty = await findUserById(userId);
     if(user) {
     delete user.password;
   }
