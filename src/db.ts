@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt'
 import express, { NextFunction, Request, Response } from 'express'
 import uuid4 from "uuid4";
 
-export type Token = {
+export type IToken = {
   accessToken: string;
   id: string;
   user: string;
@@ -35,14 +35,14 @@ export function Singup() {
 
 const prisma = new PrismaClient();
 
-function generateAccessToken(user: Token) {
+function generateAccessToken(user: IToken) {
     return jwt.sign({ userId: user.id}, process.env.JWT_ACCESS_SECRET as string, {
       expiresIn: '5m',
     });
   }
   
 
-  function generateRefreshToken(user: Token, jti: string) {
+  function generateRefreshToken(user: IToken, jti: string) {
     return jwt.sign({
       userId: user.id,
       jti
@@ -52,7 +52,7 @@ function generateAccessToken(user: Token) {
   }
 
   
-  function generateTokens(user: Token, jti: string) {
+  function generateTokens(user: IToken, jti: string) {
     
     const accessToken = generateAccessToken(user);
     
@@ -77,7 +77,7 @@ function generateAccessToken(user: Token) {
     });
   }
   
-  function createUserByEmailAndPassword(user: Token) {
+  function createUserByEmailAndPassword(user: IToken) {
     user.password = bcrypt.hashSync(user.password, 12);
     return prisma.user.create({
       data: user
@@ -139,7 +139,7 @@ const router = express.Router();
 
 router.post('/register', async (req, res, next) => {
     try {
-      const { email, password }: Token = req.body;
+      const { email, password }: IToken = req.body;
       if (!email || !password) {
         res.status(400);
         throw new Error('You must provide an email and a password.');
@@ -152,7 +152,7 @@ router.post('/register', async (req, res, next) => {
         throw new Error('Email already in use.');
       }
   
-      const user: Token = await createUserByEmailAndPassword({
+      const user: IToken = await createUserByEmailAndPassword({
         email, password,
         accessToken: "",
         id: "",
@@ -181,7 +181,7 @@ router.post('/register', async (req, res, next) => {
 
   router.post('/login', async (req, res, next) => {
     try {
-      const { email, password }: Token = req.body;
+      const { email, password }: IToken = req.body;
       if (!email || !password) {
         res.status(400);
         throw new Error('You must provide an email and a password.');

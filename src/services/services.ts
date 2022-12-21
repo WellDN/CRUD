@@ -1,7 +1,11 @@
 import { client } from "./axiosClient";
-import { Token } from '../db'
 
-export function register({ email, password }: Token) {
+export type IService = {
+  email: FormDataEntryValue | null;
+  password: FormDataEntryValue | null;
+}
+
+export function register({ email, password }: IService) {
   return client.post(
     "auth/register",
     { email, password },
@@ -9,7 +13,7 @@ export function register({ email, password }: Token) {
   );
 }
 
-export function login({ email, password }: Token) {
+export function login({ email, password }: IService) {
     return client.post(
       "auth/login",
       { email, password },
