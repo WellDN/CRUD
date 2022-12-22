@@ -3,9 +3,16 @@ import { Link, useActionData, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './authStore';
 import { getProfile, register, login } from './services/services';
 import { Request } from 'express';
+import axios from 'axios';
 
 type IAction = {
-  request: Request
+  request: Request;
+}
+
+type IActionData = {
+  error?: unknown;
+
+  [key: string]: any;
 }
 
 export async function action({ request }: IAction) {
@@ -18,19 +25,19 @@ export async function action({ request }: IAction) {
     const { accessToken, refreshToken } = response.data;
     return { tokens: { accessToken, refreshToken }, error: null };
   } catch (error) {
-    
-      return {
-        error: error?.response?.data?.message || error.message,
-        tokens: null,
-      };
+    if (axios.isAxiosError(error))
+    return {            
+      error: error?.response?.data?.message || error.message,
+      tokens: null,
+    };
     }
   }
 
 export function Login() {
 
-  const actionData = useActionData();
+  const actionData: unknown | IActionData = useActionData();
   const navigate = useNavigate();
-  const login = useAuthStore((state) => state.login);
+  const login: string = useAuthStore((state) => state.login);
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn());
   const [profile, setProfile] = useState(null);
