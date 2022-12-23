@@ -9,7 +9,7 @@ export default function App() {
     <Route path="/" element={<Home />} />
     <Route path="/home" element={<Home />} />
     <Route path="/home" element={<Login />} />
-    <Route path="/login" element={<Login />} action={loginAction}/>
+    <Route path="/login" element={<Login />} />    
   </Routes>
     )
 }
