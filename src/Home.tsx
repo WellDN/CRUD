@@ -1,15 +1,24 @@
-import { Auth } from "./auth";
-import { Login } from "./login";
+import { Link } from "react-router-dom";
 
 export function Home() {
   return(
     <>
-        <body>
-        <div>
-        <Login />
-        </div>
-        <Auth />
-      </body>
-      </>
-    )
+  <div>
+   <div>
+     <a>
+      <Link
+   to="/login">
+    login
+    </Link>
+    </a>
+    </div>
+    <a>
+      <Link
+       to="/signup">
+        signup
+        </Link>
+        </a>
+  </div>
+  </>
+  )
 }
