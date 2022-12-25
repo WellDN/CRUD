@@ -1,18 +1,64 @@
 import { Auth } from './auth';
 import { Link } from 'react-router-dom';
-import { Signup } from './signup';
+import React, { useState } from "react";
+import { NavigateFunction, useNavigate } from 'react-router-dom';
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { login } from './services/auth-service';
 
-export function Login() {
+type Props = {}
 
+export const Login: React.FC<Props> = () => {
+
+  let navigate: NavigateFunction = useNavigate();
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+
+  const initialValues: {
+    username: string;
+    password: string;
+  } = {
+    username: "",
+    password: "",
+  };
+
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required("This field is required!"),
+    password: Yup.string().required("This field is required!"),
+  });
+
+  const handleLogin = (formValue: { username: string; password: string }) => {
+    const { username, password } = formValue;
+
+    setMessage("");
+    setLoading(true);
+
+    login(username, password).then(
+      () => {
+        navigate("/profile");
+        window.location.reload();
+      },
+      (error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+
+        setLoading(false);
+        setMessage(resMessage);
+      }
+    );
+  };
   return (
     <>
     <body>
       <div>
-    
     <p className="text-center text-gray-500 text-xs">
     </p>
-  </div>   
-  
+  </div>     
         <div className="w-full max-w-xs">
   <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
     <div className="mb-4">
@@ -59,6 +105,7 @@ export function Login() {
   </form>
   <p className="text-center text-gray-500 text-xs">
   </p>
+  <Auth />
 </div>
 </body>
 </>

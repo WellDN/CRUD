@@ -7,14 +7,14 @@ export function Home() {
    <div>
      <a>
       <Link
-   to="/login">
+   to={"/login"}>
     login
     </Link>
     </a>
     </div>
     <a>
       <Link
-       to="/signup">
+       to={"/signup"}>
         signup
         </Link>
         </a>
