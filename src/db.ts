@@ -31,7 +31,7 @@ type OptionalProperty = {
 } | null
 
 
-export function Singup() {
+export function Db() {
 
 const prisma = new PrismaClient();
 
@@ -307,7 +307,4 @@ router.get('/profile', isAuthenticated, async (req, res, next) => {
 });
 
 router.use('/users');
-
-/**/
- return
 }
