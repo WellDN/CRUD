@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Link, Route, Routes } from "react-router-dom"
 import { Home } from "./Home"
 import { Login } from "./login"
@@ -14,8 +15,8 @@ export default function App() {
       <div>
   <Routes>
     <Route path="/" element={<Home />} />
-    <Route path="/login" element={<Login />} />
     <Route path="/signup" element={<Signup />} />
+    <Route path="/login" element={<Login />} />
   </Routes>
   </div>
   </div>

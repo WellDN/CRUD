@@ -289,7 +289,6 @@ function isAuthenticated(req: Request, res: Response, next: NextFunction): void 
       }
       throw new Error('🚫 Un-Authorized 🚫');
     }
-
     return next();
   }
 

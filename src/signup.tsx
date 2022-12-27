@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+// @ts-nocheck
+import { Link } from 'react-router-dom';
 
 export function Signup() {
-  
+
   return(
     <div>
     <div className="w-full max-w-xs">
