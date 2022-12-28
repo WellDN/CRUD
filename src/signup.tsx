@@ -1,77 +1,168 @@
-// @ts-nocheck
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { Formik, Field, Form, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { register } from "./services/auth-service";
+import { TokenResponse, useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 
-export function Signup() {
-
-  return(
-    <div>
-    <div className="w-full max-w-xs">
-    <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" >
-    <div className="mb-4">
-    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-      Email
-    </label>
-    <input
-    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-    id="email-adress"
-    name="email"
-    type="text"
-    autoComplete="email"
-    placeholder="Email"
-    required
-    />
-  </div>
-  <div className="mb-4">
-    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="firstPassword">
-   Password
-    </label>
-    <input    
-    required
-    id="password" 
-    name="password" 
-    type="password" 
-    placeholder="******************"
-    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-    />
-  </div>
-  <div className="mb-6">
-    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">
-      Confirm Password
-    </label>
-    <input 
-    required       
-    placeholder="******************"
-    id="confirmPassword"
-    type="password"
-    name="confirmPassword"
-    className="shadow appearance-none border border-red-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-    />
-    <p className="text-red-500 text-xs italic">Please confirm your password.</p>
-  </div>
-  <div className="flex items-center justify-between">
-  <button
-    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-    type="submit"
-    id="register"
-    name="type"
-    value="register"
-    >
-      Sign Up
-    </button>
-  </div>
-  <div className="flex items-center justify-between">
-
-  <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
-  <Link
-  className=""
-    to={"/login"}
-  >
-    Already have an account?
-  </Link>
-  </a>
- </div>
-</form>
-</div>
-</div>
-)
+type IUser = {
+  id?: any | null,
+  username: string,
+  email: string,
+  password: string,
+  roles?: Array<string>
 }
+
+export const Signup: React.FC = () => {
+
+  const [tokenResponse, setTokenResponse] = useState<TokenResponse>();
+  const [user, setUser] = useState<string>(null!);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async tokenResponse => {
+      const userInfo = await axios
+        .get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        })
+        .then(res => res.data);
+
+      setTokenResponse(tokenResponse);
+      setUser(userInfo);
+    },
+    onError: errorResponse => console.log(errorResponse),
+  });
+
+  const [successful, setSuccessful] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+
+  const initialValues: IUser = {
+    username: "",
+    email: "",
+    password: "",
+  };
+
+  const validationSchema = Yup.object().shape({
+    username: Yup.string()
+      .test(
+        "len",
+        "The username must be between 3 and 20 characters.",
+        (val: any) =>
+          val &&
+          val.toString().length >= 3 &&
+          val.toString().length <= 20
+      )
+      .required("This field is required!"),
+    email: Yup.string()
+      .email("This is not a valid email.")
+      .required("This field is required!"),
+    password: Yup.string()
+      .test(
+        "len",
+        "The password must be between 6 and 40 characters.",
+        (val: any) =>
+          val &&
+          val.toString().length >= 6 &&
+          val.toString().length <= 40
+      )
+      .required("This field is required!"),
+  });
+
+  const handleRegister = (formValue: IUser) => {
+    const { username, email, password } = formValue;
+
+    register(username, email, password).then(
+      (response) => {
+        setMessage(response.data.message);
+        setSuccessful(true);
+      },
+      (error) => {
+        const resMessage =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+
+        setMessage(resMessage);
+        setSuccessful(false);
+      }
+    );
+  };
+
+  return (
+    <div className="col-md-12">
+      <div className="card card-container">
+        <img
+          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+          alt="profile-img"
+          className="profile-img-card"
+        />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleRegister}
+        >
+          <Form>
+            {!successful && (
+              <div>
+                <div className="form-group">
+                  <label htmlFor="username"> Username </label>
+                  <Field name="username" type="text" className="form-control" />
+                  <ErrorMessage
+                    name="username"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email"> Email </label>
+                  <Field name="email" type="email" className="form-control" />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="password"> Password </label>
+                  <Field
+                    name="password"
+                    type="password"
+                    className="form-control"
+                  />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="alert alert-danger"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
+                </div>
+              </div>
+            )}
+
+            {message && (
+              <div className="form-group">
+                <div
+                  className={
+                    successful ? "alert alert-success" : "alert alert-danger"
+                  }
+                  role="alert"
+                >
+                  {message}
+                </div>
+              </div>
+            )}
+          </Form>
+        </Formik>
+      </div>
+      <button onClick={() => googleLogin()}>
+        Sign Up with Google
+      </button>
+    </div>
+  );
+};

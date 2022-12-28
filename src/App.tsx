@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { Link, Route, Routes } from "react-router-dom"
 import { Home } from "./Home"
 import { Login } from "./login"
@@ -22,3 +21,4 @@ export default function App() {
   </div>
     )
 }
+
