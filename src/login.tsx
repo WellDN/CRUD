@@ -1,13 +1,13 @@
 import { Auth } from "./auth";
-import React, { useState } from "react";
+import { useState } from "react";
 import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { login } from "./services/auth-service";
 
-  type Props = {}
+export type Props = {}
 
-export const Login: React.FC<Props> = () => {
+export function Login() {
   let navigate: NavigateFunction = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);

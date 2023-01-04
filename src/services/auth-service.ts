@@ -10,19 +10,16 @@ export const register = (username: string, email: string, password: string) => {
   });
 };
 
-export const login = (username: string, password: string) => {
-  return axios
+export const login = async (username: string, password: string) => {
+  const response = await axios
     .post(API_URL + "signin", {
       username,
       password,
-    })
-    .then((response) => {
-      if (response.data.accessToken) {
-        localStorage.setItem("user", JSON.stringify(response.data));
-      }
-
-      return response.data;
     });
+  if (response.data.accessToken) {
+    localStorage.setItem("user", JSON.stringify(response.data));
+  }
+  return response.data;
 };
 
 export const logout = () => {

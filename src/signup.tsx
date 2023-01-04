@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { register } from "./services/auth-service";
@@ -6,14 +6,14 @@ import { TokenResponse, useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 type IUser = {
-  id?: any | null,
+  id?: null,
   username: string,
   email: string,
   password: string,
   roles?: Array<string>
 }
 
-export const Signup: React.FC = () => {
+export function Signup() {
 
   const [tokenResponse, setTokenResponse] = useState<TokenResponse>();
   const [user, setUser] = useState<string>(null!);
