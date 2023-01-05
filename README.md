@@ -1,1 +1,1 @@
-# OAuth2 Google API
+# OAuth 2.0 Google API
