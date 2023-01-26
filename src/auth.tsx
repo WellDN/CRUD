@@ -14,7 +14,6 @@ export function Auth() {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         })
         .then(res => res.data);
-
       setTokenResponse(tokenResponse);
       setUser(userInfo);
     },
