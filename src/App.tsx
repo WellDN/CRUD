@@ -6,12 +6,12 @@ import { Signup } from "./signup"
 export default function App() {
   
     return (
-      <div>
-        <Link
-        to="">
-          Home
-        </Link>
-      <div>
+  <div>
+    <Link
+    to="">
+      Home
+    </Link>
+  <div>
   <Routes>
     <Route path="/" element={<Home />} />
     <Route path="/signup" element={<Signup />} />
@@ -21,4 +21,3 @@ export default function App() {
   </div>
     )
 }
-
