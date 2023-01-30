@@ -1,6 +1,7 @@
 import { TokenResponse, useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 
 export function Auth() {
   
@@ -20,8 +21,17 @@ export function Auth() {
     onError: errorResponse => console.log(errorResponse),
   });
 
+  const authLogin = googleLogin;
+
+useEffect(() => {
+    fetch('/add')
+    .then((response) => response.json() {
+     
+    })
+}, [authLogin])
+
   return(
-    <button onClick={() => googleLogin()}>
+    <button onClick={() => authLogin()}>
         Login with Google
       </button>
   )

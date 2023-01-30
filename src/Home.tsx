@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { googleLogout } from "@react-oauth/google";
 
 export function Home() {
+
+
   return(
     <>
   <div>
@@ -18,6 +21,9 @@ export function Home() {
         signup
         </Link>
         </a>
+        <div>
+        <button onClick={() => (googleLogout)}>logout</button>
+        </div>
   </div>
   </>
   )
