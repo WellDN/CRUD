@@ -3,7 +3,6 @@ lockfileVersion: 5.4
 specifiers:
   '@faker-js/faker': ^7.6.0
   '@prisma/client': ^4.9.0
-  '@react-oauth/google': ^0.6.1
   '@remix-run/dev': ^1.12.0
   '@remix-run/eslint-config': ^1.12.0
   '@remix-run/express': ^1.12.0
@@ -64,7 +63,6 @@ specifiers:
 
 dependencies:
   '@prisma/client': 4.9.0_prisma@4.9.0
-  '@react-oauth/google': 0.6.1_biqbaboplfbrettd7655fr4n2y
   '@remix-run/express': 1.12.0_express@4.18.2
   '@remix-run/node': 1.12.0
   '@remix-run/react': 1.12.0_biqbaboplfbrettd7655fr4n2y
@@ -2132,8 +2130,6 @@ packages:
     resolution: {integrity: sha512-t1pt0Gsp+HcgPJrHFc+d/ZSAaKKWar2G/iakrE07yeKPNavDP3iVKPpfXP22OTCHZUWf7OelwKJxQgKAm5hkgw==}
     requiresBuild: true
 
-  /@react-oauth/google/0.6.1_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-Nq4OK/NTgnvl2dTgQW5H8O1bhLg4JRQhwkEzpfZNKA1ijByQk6X4XG1FGS49FIHjjKInb263Me/yVQ2F3LJeuw==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
