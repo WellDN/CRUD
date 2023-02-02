@@ -103,4 +103,4 @@
   "prisma": {
     "seed": "ts-node --require tsconfig-paths/register prisma/seed.ts"
   }
-}
+} 
