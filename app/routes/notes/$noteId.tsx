@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useCatch, useLoaderData } from "@remix-run/react";
+import { Form, useCatch, useLoaderData, Link } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import { deleteNote, getNote } from "~/models/note.server";
@@ -30,7 +30,13 @@ export default function NoteDetailsPage() {
   const data = useLoaderData<typeof loader>();
 
   return (
-    <div>
+    <div className="">
+    <div className="justify-end flex">
+    <Link to="edit"
+    >
+    📝 edit
+    </Link>
+    </div>
       <h3 className="text-2xl font-bold">{data.note.title}</h3>
       <p className="py-6">{data.note.body}</p>
       <hr className="my-4" />
