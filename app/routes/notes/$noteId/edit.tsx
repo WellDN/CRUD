@@ -40,7 +40,7 @@ if (typeof title !== "string" || title.length === 0) {
 
     await editNote({ userId, id: params.noteId, body, title });
     
-    return redirect(`/notes/${params.id}`)
+    return redirect(`/notes/${params.noteId}`)
 }
 
 export default function EditNotes() {
