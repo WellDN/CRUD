@@ -2129,14 +2129,9 @@ packages:
   /@prisma/engines/4.9.0:
     resolution: {integrity: sha512-t1pt0Gsp+HcgPJrHFc+d/ZSAaKKWar2G/iakrE07yeKPNavDP3iVKPpfXP22OTCHZUWf7OelwKJxQgKAm5hkgw==}
     requiresBuild: true
-
-    peerDependencies:
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
     dependencies:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
-    dev: false
 
   /@remix-run/dev/1.12.0:
     resolution: {integrity: sha512-lBiA2FlDi+DjpOAE/vn93zFTSxudKag/FGpmbV6O+LQItDCpFARfbBMhTck/uKcc95nyhRd1GGhQ4ZDgQnyjaQ==}

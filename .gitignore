@@ -3,6 +3,7 @@ node_modules
 /build
 /public/build
 .env
+client_secret_557148052813-lfls00lgoff5gspb83oq5hfi72hckbpi.apps.googleusercontent.com.json
 
 /cypress/screenshots
 /cypress/videos

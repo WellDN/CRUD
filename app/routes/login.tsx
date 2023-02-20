@@ -6,6 +6,8 @@ import * as React from "react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { useGoogleLogin } from "@react-oauth/google";
+import SignInWithGitHubButton from "./auth/SignInWithGoogle";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -65,6 +67,11 @@ export const meta: MetaFunction = () => {
 };
 
 export default function LoginPage() {
+  const googleLogin = useGoogleLogin ({
+    onSuccess: codeResponse => console.log(codeResponse),
+    flow: 'auth-code',
+});
+
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/notes";
   const actionData = useActionData<typeof action>();
@@ -80,6 +87,7 @@ export default function LoginPage() {
   }, [actionData]);
 
   return (
+  <>
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8">
         <Form method="post" className="space-y-6" noValidate>
@@ -172,8 +180,15 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
+          <button onClick={() => googleLogin()}>
+          Sign in with Google 🚀{' '}
+          </button>
+          <div>
+            <SignInWithGitHubButton />
+          </div>
         </Form>
       </div>
     </div>
+    </>
   );
 }
