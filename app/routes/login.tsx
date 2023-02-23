@@ -2,12 +2,16 @@ import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
+import { SocialsProvider } from "remix-auth-socials";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { useGoogleLogin } from "@react-oauth/google";
-import SignInWithGitHubButton from "./auth/SignInWithGoogle";
+
+interface SocialButtonProps {
+  provider: SocialsProvider,
+  label: string
+}
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -66,11 +70,14 @@ export const meta: MetaFunction = () => {
   };
 };
 
+
 export default function LoginPage() {
-  const googleLogin = useGoogleLogin ({
-    onSuccess: codeResponse => console.log(codeResponse),
-    flow: 'auth-code',
-});
+
+    const SocialButton: React.FC<SocialButtonProps> = ({ provider, label }) => (
+  <Form action={`/auth/${provider}`} method="post">
+    <button>{label}</button>
+  </Form>
+);
 
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/notes";
@@ -180,14 +187,11 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-          <button onClick={() => googleLogin()}>
-          Sign in with Google 🚀{' '}
-          </button>
-          <div>
-            <SignInWithGitHubButton />
-          </div>
-        </Form>
-      </div>
+          <SocialButton provider={SocialsProvider.GITHUB} label="Login with Github" />
+          <SocialButton provider={SocialsProvider.GOOGLE} label="Login with Google" />
+          <SocialButton provider={SocialsProvider.FACEBOOK} label="Login with Facebook" />
+         </Form>
+        </div>
     </div>
     </>
   );
