@@ -11,11 +11,14 @@ export let loader = async ({ request, params }: LoaderArgs) => {
 };
 
 export default function Dashboard() {
-  const { user }: any= useLoaderData<typeof loader>();
+  const { user } = useLoaderData<typeof loader>();
+
 
   return (
     <div>
-      <h1>Welcome {user.displayName}!</h1>
+      <h1>Welcome
+      {user.displayName}!
+      </h1>
       <p>This is a protected page</p>
       <Form action="/logout" method="post">
         <button>Logout</button>

@@ -187,10 +187,10 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-          <SocialButton provider={SocialsProvider.GITHUB} label="Login with Github" />
-          <SocialButton provider={SocialsProvider.GOOGLE} label="Login with Google" />
-          <SocialButton provider={SocialsProvider.FACEBOOK} label="Login with Facebook" />
          </Form>
+         <SocialButton provider={SocialsProvider.GITHUB} label="Login with Github" />
+         <SocialButton provider={SocialsProvider.GOOGLE} label="Login with Google" />
+         <SocialButton provider={SocialsProvider.FACEBOOK} label="Login with Facebook" />
         </div>
     </div>
     </>

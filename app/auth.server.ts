@@ -2,6 +2,7 @@
 import { Authenticator } from "remix-auth";
 import { GoogleStrategy, FacebookStrategy, SocialsProvider,  GitHubStrategy } from "remix-auth-socials";
 import { sessionStorage } from "./session.server";
+import type { GoogleProfile } from "remix-auth-socials";
 
 // Create an instance of the authenticator
 export let authenticator = new Authenticator(sessionStorage, { sessionKey: '_session' });
@@ -14,13 +15,13 @@ const getCallback = (provider: SocialsProvider) => {
 
 authenticator.use(new GoogleStrategy(
   {
-    clientID: "557148052813-lfls00lgoff5gspb83oq5hfi72hckbpi.apps.googleusercontent.com",
-    clientSecret: "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",
+    clientID: process.env.GOOGLE_CLIENT_ID || "",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     callbackURL: getCallback(SocialsProvider.GOOGLE)
   },
-  async ({ profile }) => {
+  async ({ profile, accessToken, refreshToken, extraParams, ...rest }) => {
     // here you would find or create a user in your database
-    return profile;
+      return profile as GoogleProfile; 
   }
 ));
 
@@ -41,3 +42,4 @@ authenticator.use(new GitHubStrategy(
   },
   async ({ profile }) => {}
 ));
+
