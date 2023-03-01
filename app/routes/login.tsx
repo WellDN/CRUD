@@ -2,16 +2,12 @@ import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
-import { SocialsProvider } from "remix-auth-socials";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import AuthButtons from "./auth/auth.buttons";
 
-interface SocialButtonProps {
-  provider: SocialsProvider,
-  label: string
-}
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -73,11 +69,6 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
 
-    const SocialButton: React.FC<SocialButtonProps> = ({ provider, label }) => (
-  <Form action={`/auth/${provider}`} method="post">
-    <button>{label}</button>
-  </Form>
-);
 
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/notes";
@@ -188,9 +179,7 @@ export default function LoginPage() {
             </div>
           </div>
          </Form>
-         <SocialButton provider={SocialsProvider.GITHUB} label="Login with Github" />
-         <SocialButton provider={SocialsProvider.GOOGLE} label="Login with Google" />
-         <SocialButton provider={SocialsProvider.FACEBOOK} label="Login with Facebook" />
+         <AuthButtons />
         </div>
     </div>
     </>

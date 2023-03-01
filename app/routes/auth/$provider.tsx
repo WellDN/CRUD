@@ -5,5 +5,5 @@ import { authenticator } from "~/auth.server";
 export let loader = () => redirect('/login');
 
 export let action = ({ request, params }: ActionArgs) => {
-  return authenticator.authenticate(params.provider, request);
+  return authenticator.authenticate(params.provider!, request);
 };
