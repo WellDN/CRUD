@@ -9,10 +9,9 @@ import type { User } from "@prisma/client";
 export let authenticator = new Authenticator<User>(sessionStorage, { sessionKey: '_session' });
 // You may specify a <User> type which the strategies will return (this will be stored in the session)
 // export let authenticator = new Authenticator<User>(sessionStorage, { sessionKey: '_session' });
-
 const getCallback = (provider: SocialsProvider) => {
   return `http://localhost:3000/auth/${provider}/callback`
-} 
+}
 
 authenticator.use(new GoogleStrategy(
   {
