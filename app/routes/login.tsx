@@ -6,7 +6,7 @@ import * as React from "react";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import AuthButtons from "./auth/auth.buttons";
+//import AuthButtons from "./auth/auth.buttons";
 
 
 export async function loader({ request }: LoaderArgs) {
@@ -179,7 +179,6 @@ export default function LoginPage() {
             </div>
           </div>
          </Form>
-         <AuthButtons />
         </div>
     </div>
     </>
